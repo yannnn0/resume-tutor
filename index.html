@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简历优化导师</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        :root {
+            /* 学术风格 - 参考 Y. Chen Portfolio */
+            --bg-paper: #FAFAFA;
+            --bg-card: #FFFFFF;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-muted: #a8a29e;
+            --accent-black: #1c1917;
+            --border-light: #e7e5e4;
+            --border-dark: #d6d3d1;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-paper);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            background: var(--bg-paper);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 72px;
+            background: rgba(250, 250, 250, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 100;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-logo {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--bg-paper);
+            font-family: 'Newsreader', serif;
+        }
+
+        .header-title-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title {
+            font-family: 'Newsreader', serif;
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+        }
+
+        .header-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .header-status {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-black);
+        }
+
+        .header-help {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .header-help:hover {
+            border-color: var(--accent-black);
+            color: var(--accent-black);
+        }
+
+        /* ===== CHAT AREA ===== */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-top: 72px;
+            padding-right: 300px;
+            background: var(--bg-paper);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--border-dark);
+            border-radius: 3px;
+        }
+
+        /* ===== MESSAGES ===== */
+        .message {
+            display: flex;
+            gap: 20px;
+            max-width: 720px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            flex-shrink: 0;
+            background: var(--accent-black);
+            color: var(--bg-paper);
+            font-family: 'Newsreader', serif;
+        }
+
+        .message-avatar.user {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-bubble {
+            padding: 28px 32px;
+            font-size: 0.95rem;
+            line-height: 1.85;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.ai .message-bubble {
+            border-left: 3px solid var(--accent-black);
+        }
+
+        .message.user .message-bubble {
+            background: var(--bg-paper);
+        }
+
+        /* 消息内容样式 */
+        .message-bubble h2 {
+            font-family: 'Newsreader', serif;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
+            letter-spacing: -0.01em;
+        }
+
+        .message-bubble h3 {
+            font-family: 'Newsreader', serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            margin-top: 20px;
+            letter-spacing: -0.005em;
+        }
+
+        .message-bubble h3:first-of-type {
+            margin-top: 0;
+        }
+
+        .message-bubble p {
+            margin-bottom: 14px;
+            color: var(--text-secondary);
+        }
+
+        .message-bubble ul, .message-bubble ol {
+            margin: 14px 0;
+            padding-left: 22px;
+        }
+
+        .message-bubble li {
+            margin: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .message-bubble code {
+            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            background: var(--bg-paper);
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .message-bubble pre {
+            background: var(--bg-paper);
+            padding: 18px;
+            margin: 16px 0;
+            border: 1px solid var(--border-light);
+            overflow-x: auto;
+        }
+
+        .message-bubble pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            color: var(--text-primary);
+        }
+
+        .message-bubble hr {
+            border: none;
+            border-top: 1px solid var(--border-light);
+            margin: 20px 0;
+        }
+
+        .message-bubble strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ===== FILE ATTACHMENT ===== */
+        .file-attachment {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--bg-card);
+            padding: 14px 18px;
+            border: 1px solid var(--border-light);
+            margin-top: 12px;
+        }
+
+        .file-icon {
+            font-size: 1.4rem;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .file-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ===== INPUT AREA ===== */
+        .input-area {
+            padding: 24px 40px 32px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: var(--bg-paper);
+            border: 1px solid var(--border-light);
+            padding: 10px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .input-container:focus-within {
+            border-color: var(--accent-black);
+            box-shadow: 0 0 0 3px rgba(28, 25, 23, 0.08);
+        }
+
+        .upload-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .upload-btn:hover {
+            border-color: var(--accent-black);
+            color: var(--accent-black);
+        }
+
+        .input-wrapper {
+            flex: 1;
+        }
+
+        .input-wrapper textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: none;
+            max-height: 80px;
+            outline: none;
+            line-height: 1.6;
+        }
+
+        .input-wrapper textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-black);
+            border: none;
+            border-radius: 10px;
+            color: var(--bg-paper);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .send-btn:disabled {
+            background: var(--border-dark);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ===== PROGRESS SIDEBAR ===== */
+        .progress-sidebar {
+            position: fixed;
+            top: 72px;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-light);
+            padding: 32px 24px;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--accent-black);
+        }
+
+        .sidebar-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--bg-paper);
+            font-family: 'Newsreader', serif;
+        }
+
+        .sidebar-title {
+            font-family: 'Newsreader', serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            color: var(--text-primary);
+        }
+
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: var(--bg-paper);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .step-item:hover {
+            border-color: var(--border-dark);
+        }
+
+        .step-item.active {
+            border-color: var(--accent-black);
+            background: rgba(28, 25, 23, 0.03);
+        }
+
+        .step-item.completed {
+            border-color: var(--border-light);
+            background: var(--bg-card);
+        }
+
+        .step-icon {
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+
+        .step-item.completed .step-icon {
+            background: var(--accent-black);
+            border-color: var(--accent-black);
+            color: var(--bg-paper);
+        }
+
+        .step-item.active .step-icon {
+            background: var(--accent-black);
+            border-color: var(--accent-black);
+            color: var(--bg-paper);
+        }
+
+        .step-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .step-status {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .step-item.completed .step-status,
+        .step-item.active .step-status {
+            color: var(--text-secondary);
+        }
+
+        /* ===== CURRENT STATUS ===== */
+        .current-status {
+            margin-top: 28px;
+            padding: 20px;
+            background: var(--bg-paper);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+        }
+
+        .status-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .status-value {
+            font-family: 'Newsreader', serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* ===== LOADING ===== */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 12px;
+        }
+
+        .typing-indicator span {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-black);
+            border-radius: 50%;
+        }
+
+        .typing-indicator span:nth-child(1) { animation: blink 0.6s infinite; }
+        .typing-indicator span:nth-child(2) { animation: blink 0.6s infinite 0.15s; }
+        .typing-indicator span:nth-child(3) { animation: blink 0.6s infinite 0.3s; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ===== HIDDEN FILE INPUT ===== */
+        #file-input {
+            display: none;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .progress-sidebar {
+                display: none;
+            }
+
+            .chat-area {
+                padding-right: 0;
+            }
+
+            .header {
+                padding: 0 20px;
+            }
+
+            .messages-container {
+                padding: 24px 16px;
+            }
+
+            .input-area {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-logo">R</div>
+                <div class="header-title-group">
+                    <h1 class="header-title">简历优化导师</h1>
+                    <span class="header-subtitle">AI-Powered Resume Coaching</span>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="header-status">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
+                <a href="how-it-works.html" class="header-help">How it works</a>
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <main class="chat-area">
+            <div class="messages-container" id="messages"></div>
+            <div class="input-area">
+                <div class="input-container">
+                    <button class="upload-btn" id="upload-btn" title="上传简历">📎</button>
+                    <div class="input-wrapper">
+                        <textarea id="message-input" placeholder="输入您的简历文本，或点击左侧按钮上传PDF..." rows="1"></textarea>
+                    </div>
+                    <button class="send-btn" id="send-btn" title="发送">→</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Progress Sidebar -->
+        <aside class="progress-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-icon">R</div>
+                <span class="sidebar-title">优化进度</span>
+            </div>
+            <div class="step-list">
+                <div class="step-item" id="step-1">
+                    <div class="step-icon">1</div>
+                    <div class="step-info">
+                        <div class="step-name">第一印象诊断</div>
+                        <div class="step-status">等待</div>
+                    </div>
+                </div>
+                <div class="step-item" id="step-2">
+                    <div class="step-icon">2</div>
+                    <div class="step-info">
+                        <div class="step-name">深度审计</div>
+                        <div class="step-status">等待</div>
+                    </div>
+                </div>
+                <div class="step-item" id="step-3">
+                    <div class="step-icon">3</div>
+                    <div class="step-info">
+                        <div class="step-name">修改蓝图</div>
+                        <div class="step-status">等待</div>
+                    </div>
+                </div>
+                <div class="step-item" id="step-4">
+                    <div class="step-icon">4</div>
+                    <div class="step-info">
+                        <div class="step-name">简历范本</div>
+                        <div class="step-status">等待</div>
+                    </div>
+                </div>
+                <div class="step-item" id="step-5">
+                    <div class="step-icon">5</div>
+                    <div class="step-info">
+                        <div class="step-name">最终裁决</div>
+                        <div class="step-status">等待</div>
+                    </div>
+                </div>
+            </div>
+            <div class="current-status">
+                <div class="status-label">当前状态</div>
+                <div class="status-value" id="current-status">等待上传简历</div>
+            </div>
+        </aside>
+
+        <!-- Hidden file input -->
+        <input type="file" id="file-input" accept=".pdf,.txt,.doc,.docx">
+    </div>
+
+    <script>
+        // 配置
+        const API_KEY = '5b24c7ab5edc4ef0b559502bb41aef4b.bKk2pW57QR5feQ4I';
+        const API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+
+        // 状态
+        let step = '0';
+        let continueCount = 0;
+        let resumeText = '';
+        let resumeFileName = '';
+        let isThinking = false;
+        let messages = [];
+
+        // 保存状态到localStorage
+        function saveState() {
+            localStorage.setItem('resume_tutor_step', step);
+            localStorage.setItem('resume_tutor_continueCount', continueCount.toString());
+            localStorage.setItem('resume_tutor_resumeText', resumeText);
+            localStorage.setItem('resume_tutor_resumeFileName', resumeFileName);
+            localStorage.setItem('resume_tutor_messages', JSON.stringify(messages));
+        }
+
+        // 从localStorage恢复状态
+        function loadState() {
+            const savedStep = localStorage.getItem('resume_tutor_step');
+            const savedCount = localStorage.getItem('resume_tutor_continueCount');
+            const savedText = localStorage.getItem('resume_tutor_resumeText');
+            const savedFileName = localStorage.getItem('resume_tutor_resumeFileName');
+            const savedMessages = localStorage.getItem('resume_tutor_messages');
+
+            if (savedStep) step = savedStep;
+            if (savedCount) continueCount = parseInt(savedCount);
+            if (savedText) resumeText = savedText;
+            if (savedFileName) resumeFileName = savedFileName;
+            if (savedMessages) {
+                try {
+                    messages = JSON.parse(savedMessages);
+                    messages.forEach(m => {
+                        const messageEl = document.createElement('div');
+                        messageEl.className = `message ${m.role}`;
+                        messageEl.innerHTML = `
+                            <div class="message-avatar ${m.role}">${m.role === 'ai' ? 'R' : 'U'}</div>
+                            <div class="message-content">
+                                <div class="message-bubble">${formatContent(m.content)}</div>
+                            </div>
+                        `;
+                        messagesContainer.appendChild(messageEl);
+                    });
+                    updateProgressUI();
+                } catch (e) {
+                    console.error('Failed to load messages:', e);
+                }
+            }
+        }
+
+        // 清除状态
+        function clearState() {
+            localStorage.removeItem('resume_tutor_step');
+            localStorage.removeItem('resume_tutor_continueCount');
+            localStorage.removeItem('resume_tutor_resumeText');
+            localStorage.removeItem('resume_tutor_resumeFileName');
+            localStorage.removeItem('resume_tutor_messages');
+        }
+
+        // PDF.js 配置
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // DOM 元素
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileInput = document.getElementById('file-input');
+        const currentStatusEl = document.getElementById('current-status');
+
+        // 初始化
+        function init() {
+            loadState();
+
+            if (messages.length === 0) {
+                addMessage('ai', `你好！我是你的**简历优化导师** 🎯
+
+请先上传您的简历（支持PDF、TXT格式），我会帮您进行专业的**五步诊断**：
+
+📋 Step 1: 第一印象与初步诊断
+🔍 Step 2: 地毯式深度审计与指导
+🗺️ Step 3: 战略性修改蓝图
+✍️ Step 4: 修改后的简历范本
+🏆 Step 5: 最终裁决与行动清单
+
+每一步我都会和您探讨，确保最终产出一份高质量的简历。`);
+            }
+            updateProgressUI();
+        }
+
+        // 添加消息
+        function addMessage(role, content) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${role}`;
+
+            const avatar = role === 'ai' ? 'R' : 'U';
+            const formattedContent = formatContent(content);
+
+            messageEl.innerHTML = `
+                <div class="message-avatar ${role}">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${formattedContent}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            messages.push({ role, content });
+            saveState();
+        }
+
+        // 格式化内容
+        function formatContent(content) {
+            return content
+                .replace(/## (.+)/g, '<h2>$1</h2>')
+                .replace(/### (.+)/g, '<h3>$1</h3>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+                .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/---/g, '<hr>');
+        }
+
+        // 添加加载动画
+        function addLoadingIndicator() {
+            const loadingEl = document.createElement('div');
+            loadingEl.className = 'message ai';
+            loadingEl.id = 'loading';
+            loadingEl.innerHTML = `
+                <div class="message-avatar ai">R</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 移除加载动画
+        function removeLoadingIndicator() {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) loadingEl.remove();
+        }
+
+        // 更新进度UI
+        function updateProgressUI() {
+            const stepNames = {
+                '0': '等待上传简历',
+                '1': '第一印象诊断',
+                '2': '深度审计',
+                '3': '修改蓝图',
+                '4': '简历范本',
+                '5': '完成'
+            };
+
+            currentStatusEl.textContent = stepNames[step] || '未知';
+
+            for (let i = 1; i <= 5; i++) {
+                const stepEl = document.getElementById(`step-${i}`);
+                stepEl.classList.remove('active', 'completed');
+
+                if (i < parseInt(step)) {
+                    stepEl.classList.add('completed');
+                    stepEl.querySelector('.step-icon').textContent = '✓';
+                    stepEl.querySelector('.step-status').textContent = '完成';
+                } else if (i === parseInt(step)) {
+                    stepEl.classList.add('active');
+                    stepEl.querySelector('.step-icon').textContent = i;
+                    stepEl.querySelector('.step-status').textContent = '进行';
+                } else {
+                    stepEl.querySelector('.step-icon').textContent = i;
+                    stepEl.querySelector('.step-status').textContent = '等待';
+                }
+            }
+        }
+
+        // 解析PDF
+        async function parsePDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let text = '';
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const pageText = await page.getTextContent();
+                text += pageText.items.map(item => item.str).join(' ') + '\n';
+            }
+
+            return text;
+        }
+
+        // 读取文件
+        async function handleFile(file) {
+            resumeFileName = file.name;
+            let text = '';
+
+            if (file.name.endsWith('.pdf')) {
+                text = await parsePDF(file);
+            } else if (file.name.endsWith('.txt')) {
+                text = await file.text();
+            } else {
+                alert('暂不支持此格式，请上传PDF或TXT文件');
+                return;
+            }
+
+            resumeText = text;
+
+            const fileEl = document.createElement('div');
+            fileEl.className = 'message user';
+            fileEl.innerHTML = `
+                <div class="message-avatar user">U</div>
+                <div class="message-content">
+                    <div class="file-attachment">
+                        <span class="file-icon">📄</span>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-status">${text.length} 字符</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(fileEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            await sendToAI('我上传了简历：' + text.substring(0, 500) + '...[已截断]');
+        }
+
+        // 发送消息到AI
+        async function sendToAI(userMessage) {
+            if (isThinking) return;
+            isThinking = true;
+            sendBtn.disabled = true;
+            uploadBtn.disabled = true;
+
+            addLoadingIndicator();
+
+            try {
+                const systemPrompt = getSystemPrompt();
+                const historyMessages = getConversationHistoryForAPI();
+                const messages = [
+                    { role: 'system', content: systemPrompt },
+                    ...historyMessages,
+                    { role: 'user', content: userMessage }
+                ];
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'glm-4',
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 4096,
+                        stream: false
+                    })
+                });
+
+                const data = await response.json();
+                removeLoadingIndicator();
+
+                if (data.choices && data.choices[0]) {
+                    const aiResponse = data.choices[0].message.content;
+                    addMessage('ai', aiResponse);
+                    parseAndUpdateStep(aiResponse);
+                } else if (data.error) {
+                    throw new Error(data.error.message || 'API调用失败');
+                } else {
+                    throw new Error('未知错误: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                removeLoadingIndicator();
+                addMessage('ai', `抱歉，出现了一些问题：\n\n${error.message}\n\n请重试或刷新页面。`);
+            }
+
+            isThinking = false;
+            sendBtn.disabled = false;
+            uploadBtn.disabled = false;
+        }
+
+        // 获取系统提示词
+        function getSystemPrompt() {
+            return `# 【角色】简历优化导师 (v3.0 - 对话式版)
+
+## 角色定位
+
+你是一位顶尖科技公司（FAANG级别）的技术招聘委员会核心成员，兼具技术Leader的深度、资深HRBP的广度和增长思维教练（Growth Coach）的启发性。你以"一针见血的批判"和"点石成金的建议"在业内闻名。
+
+**你的核心理念**：产出一份高质量的简历，而不是快速走完流程。你是专业老师，有义务把关每一步的质量。
+
+---
+
+## 核心原则与规则
+
+### 1. 内容为王，格式为辅
+你需要告知用户："我将假设文本的排版可能因从PDF复制而失真，因此我会专注于内容本身。但是，任何**拼写、语法、标点和专业术语**的错误都将被视为不可原谅的硬伤，因为这直接反映了候选人的严谨性。"
+
+### 2. 岗位简历匹配原则
+你不能用锤子的要求看钉子，也不能用钉子的要求看锤子。如果用户提供了目标岗位的JD，运用你的经验分析JD的需求与用户简历。
+
+### 3. "所以呢？"拷问法
+对简历中的每一句陈述，都在内心进行"所以呢？"的拷问。如果一句描述无法回答"它带来了什么具体价值或影响？"，那么它就是无效信息。
+
+### 4. "批判-解析-建议"三位一体模型
+这是你所有反馈的**唯一**格式。对于发现的每一个问题，你都必须：
+- ❓ **清晰地指出问题 (Critique)**：直截了当地点出弱点
+- 🤔 **解释负面影响 (Analysis)**：解释这个问题会如何让招聘经理/面试官产生负面联想
+- 💡 **给出具体方案 (Suggestion)**：给出可操作的修改方案
+
+### 5. 分级批判
+根据你判断的候选人目标级别以及岗位JD，调整你的批判标准和期望值。
+
+### 6. 技术审判官
+作为技术负责人，你必须对简历中的每一个技术细节进行批判性审视。
+
+---
+
+## 状态管理规则（最重要）
+
+### 会话变量
+- \`step\`: 当前步骤 (0=等待简历, 1=Step1完成, 2=Step2完成, 3=Step3完成, 4=Step4完成, 5=全部完成)
+- \`continue_count\`: 用户连续说"继续/下一步"的次数
+
+### 你的判断权（核心原则）
+
+你是简历辅导老师，不是服务员。用户说"下一步"不代表你可以放行。
+
+**质量把关规则：**
+1. 每完成一个步骤的输出后，明确告诉用户"这一步的状态：进行中/已完成/有问题"
+2. 如果用户说"继续"但这一步有问题 → 拒绝，并说明具体问题
+3. 只有满足以下条件才能进入下一步：
+   - 当前步骤的核心内容已完成
+   - 用户没有提出反对意见或疑问
+   - 或者用户连续3次坚持继续
+
+**continue_count规则：**
+- 用户说"下一步"、"继续"、"可以了"、"好的"、"OK"、"next"、"进入下一步"等 → continue_count + 1
+- 如果你拒绝了用户的继续请求 → continue_count 重置为 0
+- 如果continue_count ≥ 3 → 你可以谨慎考虑是否进入下一步
+
+**你的目标：**
+产出一份高质量的简历，而不是快速走完流程。
+
+---
+
+## 工作流程
+
+### 步骤判断逻辑
+
+1. 检查是否有简历文本？
+   - 没有 → 提示用户上传简历或粘贴简历文本，step=0
+
+2. 检查step当前值：
+   - step=0 → 执行Step1，step=1
+   - step=1 → 用户确认？→ 执行Step2 : 拒绝继续
+   - step=2 → 用户确认？→ 执行Step3 : 拒绝继续
+   - step=3 → 用户确认？→ 执行Step4 : 拒绝继续
+   - step=4 → 用户确认？→ 执行Step5 : 拒绝继续
+   - step=5 → 全部完成
+
+---
+
+### Step 1: 第一印象与初步诊断
+**执行条件**：step=0，有简历
+
+**输出格式**：
+## 📋 Step 1：第一印象与初步诊断
+
+🎯 **目标岗位判断**：xxx
+📊 **职级判断**：xxx
+
+💡 **第一印象**：
+[一句话说明]
+
+---
+👉 **请确认**：您对我刚才的诊断有疑问吗？如果没有，我可以进入下一步进行深度审计。
+
+**完成后**：设置 \`step = 1\`
+
+---
+
+### Step 2: 地毯式深度审计与指导
+**执行条件**：step=1 且 用户确认
+
+**输出格式**：
+## 🔍 Step 2：地毯式深度审计
+
+### 整体审计发现
+[列出问题]
+
+### 模块审计发现
+[逐个模块列出]
+
+### 我的问题
+[需要向用户确认的问题]
+
+---
+👉 **请确认**
+
+**完成后**：设置 \`step = 2\`
+
+---
+
+### Step 3: 战略性修改蓝图
+**执行条件**：step=2 且 用户确认
+
+**输出格式**：
+## 🗺️ Step 3：战略性修改蓝图
+
+### 修改优先级
+### 影响力叙事工具箱
+### 启发式问题
+
+---
+👉 **请确认**
+
+**完成后**：设置 \`step = 3\`
+
+---
+
+### Step 4: 修改后的简历范本
+**执行条件**：step=3 且 用户确认
+
+**输出格式**：
+## ✍️ Step 4：修改后的简历范本
+
+[完整简历，放入代码块]
+
+### 修改说明
+
+---
+👉 **请确认**
+
+**完成后**：设置 \`step = 4\`
+
+---
+
+### Step 5: 最终裁决与行动清单
+**执行条件**：step=4 且 用户确认
+
+**输出格式**：
+## 🏆 Step 5：最终裁决与行动清单
+
+### 整体评价
+### 核心风险点
+### 行动清单
+
+---
+🎉 **简历优化完成！**
+
+**完成后**：设置 \`step = 5\`
+
+---
+
+## 输出要求
+1. 使用简体中文
+2. 使用Emoji
+3. 排版清晰
+4. 每步询问确认
+5. **重要**：每次输出后，必须明确告知用户当前是哪个step，以及是否允许进入下一步`;
+        }
+
+        // 从localStorage获取历史对话
+        function getConversationHistoryForAPI() {
+            const savedMessages = localStorage.getItem('resume_tutor_messages');
+            if (!savedMessages) return [];
+
+            try {
+                const msgs = JSON.parse(savedMessages);
+                return msgs.map(m => ({
+                    role: m.role === 'ai' ? 'assistant' : m.role,
+                    content: m.content
+                }));
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // 解析AI响应并更新step
+        function parseAndUpdateStep(response) {
+            const stepMatch = response.match(/step.*?=\s*(\d+)/i);
+            if (stepMatch) {
+                step = stepMatch[1];
+                updateProgressUI();
+            }
+
+            const countMatch = response.match(/continue_count.*?=\s*(\d+)/i);
+            if (countMatch) {
+                continueCount = parseInt(countMatch[1]);
+            }
+
+            if (response.includes('Step 1') && response.includes('请确认')) {
+                step = '1';
+            } else if (response.includes('Step 2') && response.includes('请确认')) {
+                step = '2';
+            } else if (response.includes('Step 3') && response.includes('请确认')) {
+                step = '3';
+            } else if (response.includes('Step 4') && response.includes('请确认')) {
+                step = '4';
+            } else if (response.includes('Step 5') && response.includes('简历优化完成')) {
+                step = '5';
+            }
+
+            updateProgressUI();
+            saveState();
+        }
+
+        // 事件监听
+        sendBtn.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (text && !isThinking) {
+                addMessage('user', text);
+                messageInput.value = '';
+                sendToAI(text);
+            }
+        });
+
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+
+        uploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 80) + 'px';
+        });
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
