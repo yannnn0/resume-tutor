@@ -76,4 +76,4 @@ MIT License
 
 ---
 
-Built by [yannnn0](https://github.com/yannnn0)  Based on [resumePolice](https://github.com/itMrBoy/resumePolice)
+Based on [resumePolice](https://github.com/itMrBoy/resumePolice) Built by [yannnn0](https://github.com/yannnn0)  
