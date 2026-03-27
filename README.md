@@ -4,7 +4,7 @@ AI-Powered Resume Coaching Web Application
 
 ## 项目简介
 一个对话式的简历优化指导工具，通过 AI 帮助求职者优化简历。采用五步流程，确保每一步都达到专业标准。
-将resumePolice项目原有的 Dify 工作流迁移为独立的单页 Web应用，提供更灵活的控制和部署能力。
+将resumePolice原有的 Dify 工作流迁移为独立的单页 Web应用，提供更灵活的控制和部署能力。
 
 ## 功能特性
 
